@@ -1,6 +1,3 @@
-USER=${USER:-super}
-PASS=${PASS:-$(pwgen -s -1 16)}
-
 pre_start_action() {
 
   # test if DATA_DIR has content
@@ -18,37 +15,11 @@ pre_start_action() {
 }
 
 post_start_action() {
-  echo "Creating user with superuser and login rights"
-  setuser postgres psql -q <<-EOF
-    DROP ROLE IF EXISTS $USER;
-    CREATE ROLE $USER WITH ENCRYPTED PASSWORD '$PASS';
-    ALTER USER $USER WITH ENCRYPTED PASSWORD '$PASS';
-    ALTER ROLE $USER WITH SUPERUSER;
-    ALTER ROLE $USER WITH LOGIN;
-EOF
 
-  # create database if requested
-  if [ ! -z "$DB" ]; then
-    for db in $DB; do
-      echo "Creating database: $db"
-      setuser postgres psql -q <<-EOF
-      CREATE DATABASE $db WITH OWNER=$USER ENCODING='UTF8';
-      GRANT ALL ON DATABASE $db TO $USER
-EOF
-    done
-  fi
-
-  if [[ ! -z "$EXTENSIONS" && ! -z "$DB" ]]; then
-    for extension in $EXTENSIONS; do
-      for db in $DB; do
-        echo "Installing extension for $db: $extension"
-        # enable the extension for the user's database
-        setuser postgres psql $db <<-EOF
-        CREATE EXTENSION "$extension";
-EOF
-      done
-    done
-  fi
-
+  /bin/bash /scripts/postgresqlinit.sh
+  rm /scripts/postgresqlinit.sh
   rm /firstrun
+
 }
+
+
