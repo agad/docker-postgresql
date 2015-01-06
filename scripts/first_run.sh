@@ -2,11 +2,6 @@ USER=${USER:-super}
 PASS=${PASS:-$(pwgen -s -1 16)}
 
 pre_start_action() {
-  # Echo out info to later obtain by running `docker logs container_name`
-  echo "POSTGRES_USER=$USER"
-  echo "POSTGRES_PASS=$PASS"
-  echo "POSTGRES_DATA_DIR=$DATA_DIR"
-  if [ ! -z $DB ];then echo "POSTGRES_DB=$DB";fi
 
   # test if DATA_DIR has content
   if [[ ! "$(ls -A $DATA_DIR)" ]]; then
@@ -23,7 +18,6 @@ pre_start_action() {
 }
 
 post_start_action() {
-  echo "Creating the superuser: $USER"
   setuser postgres psql -q <<-EOF
     DROP ROLE IF EXISTS $USER;
     CREATE ROLE $USER WITH ENCRYPTED PASSWORD '$PASS';
