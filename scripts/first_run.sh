@@ -18,6 +18,7 @@ pre_start_action() {
 }
 
 post_start_action() {
+  echo "Creating user with superuser and login rights"
   setuser postgres psql -q <<-EOF
     DROP ROLE IF EXISTS $USER;
     CREATE ROLE $USER WITH ENCRYPTED PASSWORD '$PASS';
